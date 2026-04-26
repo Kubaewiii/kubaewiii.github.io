@@ -3,170 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ekipa Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>PRO Czat Ekipy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --text: #f8fafc;
+            --bg-dark: #09090b;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.1), transparent 40%);
         }
 
-        /* --- EKRAN LOGOWANIA --- */
-        #login-screen {
-            background: var(--panel-bg);
+        /* PANEL LOGOWANIA I REJESTRACJI */
+        .auth-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
             padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border-radius: 24px;
             width: 90%;
             max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
 
-        #login-screen h1 { margin-bottom: 20px; }
+        .auth-container h2 { margin-bottom: 25px; font-weight: 600; letter-spacing: 1px; }
 
         input {
             width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: none;
-            border-radius: 10px;
-            background: var(--bg-color);
-            color: var(--text);
-            font-size: 1rem;
+            padding: 14px 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+            color: var(--text-main);
             outline: none;
-        }
-
-        input:focus { border: 2px solid var(--primary); }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
             transition: 0.3s;
         }
 
-        button:hover { background: var(--primary-hover); }
+        input:focus { border-color: var(--accent); background: rgba(0,0,0,0.4); }
 
-        /* --- EKRAN CZATU --- */
-        #chat-screen {
-            display: none;
-            flex-direction: column;
+        button {
             width: 100%;
-            max-width: 600px;
-            height: 100vh; /* Na telefonach lepiej wygląda pełny ekran */
-            background: var(--panel-bg);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 15px;
         }
 
-        @media (min-width: 600px) {
-            #chat-screen {
-                height: 90vh;
-                border-radius: 20px;
-            }
+        button:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        .toggle-auth {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .toggle-auth:hover { color: var(--text-main); }
+
+        /* GŁÓWNY PANEL CZATU */
+        #chat-screen {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            height: 95vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            display: none; /* Ukryte na start */
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .chat-header {
-            background: var(--bg-color);
-            padding: 20px;
-            text-align: center;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 20px 25px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        .logout-btn {
+            width: auto; padding: 8px 16px; margin: 0; background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 8px; font-size: 0.85rem;
+        }
+        .logout-btn:hover { background: var(--accent); color: white; }
 
         .chat-messages {
             flex: 1;
-            padding: 20px;
+            padding: 25px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
-        /* Dymki wiadomości */
         .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 15px;
+            max-width: 75%;
+            padding: 14px 18px;
+            border-radius: 20px;
             font-size: 0.95rem;
-            line-height: 1.4;
-            animation: fadeIn 0.3s ease-out;
+            line-height: 1.5;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
         }
 
-        @keyframes fadeIn {
+        @keyframes slideUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .message.other {
-            background: var(--bg-color);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
             align-self: flex-start;
-            border-bottom-left-radius: 0;
+            border-bottom-left-radius: 4px;
         }
 
         .message.me {
-            background: var(--primary);
+            background: var(--accent);
             align-self: flex-end;
-            border-bottom-right-radius: 0;
+            border-bottom-right-radius: 4px;
         }
 
-        .message .username {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .message.me .username { color: #c7d2fe; }
+        .message .username { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block; font-weight: 500; }
+        .message.me .username { color: rgba(255,255,255,0.7); }
 
         .chat-input-area {
-            display: flex;
             padding: 20px;
-            background: var(--bg-color);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            gap: 10px;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 15px;
         }
 
-        .chat-input-area input { margin-bottom: 0; }
-        .chat-input-area button { width: auto; padding: 0 25px; }
+        .chat-input-area input { margin: 0; border-radius: 15px; }
+        .chat-input-area button { margin: 0; width: auto; padding: 0 30px; border-radius: 15px; }
 
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <h1>Czat Ekipy 🚀</h1>
-        <input type="text" id="username-input" placeholder="Wpisz swój nick..." autocomplete="off">
-        <button onclick="window.login()">Wejdź na serwer</button>
+    <div id="auth-screen" class="auth-container">
+        
+        <div id="login-form">
+            <h2>Witaj ponownie</h2>
+            <input type="email" id="login-email" placeholder="Adres e-mail">
+            <input type="password" id="login-password" placeholder="Hasło">
+            <button onclick="window.loginUser()">Zaloguj się</button>
+            <p class="toggle-auth" onclick="window.toggleForms()">Nie masz konta? Zarejestruj się</p>
+        </div>
+
+        <div id="register-form" class="hidden">
+            <h2>Dołącz do nas</h2>
+            <input type="email" id="reg-email" placeholder="Adres e-mail">
+            <input type="password" id="reg-password" placeholder="Hasło (min. 6 znaków)">
+            <button onclick="window.registerUser()">Zarejestruj się</button>
+            <p class="toggle-auth" onclick="window.toggleForms()">Masz już konto? Zaloguj się</p>
+        </div>
+
     </div>
 
     <div id="chat-screen">
         <div class="chat-header">
-            Wspólny Czat (Na Żywo)
+            <div>
+                <h3 style="font-weight: 500; font-size: 1.1rem;">PRO Czat</h3>
+                <span id="current-user-display" style="font-size: 0.8rem; color: var(--text-muted);">Zalogowano jako: </span>
+            </div>
+            <button class="logout-btn" onclick="window.logoutUser()">Wyloguj</button>
         </div>
         
-        <div class="chat-messages" id="messages-container">
-            </div>
+        <div class="chat-messages" id="messages-container"></div>
 
         <div class="chat-input-area">
             <input type="text" id="message-input" placeholder="Napisz wiadomość..." autocomplete="off">
@@ -175,11 +208,11 @@
     </div>
 
     <script type="module">
-        // Importujemy kod Firebase bezpośrednio z serwerów Google
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        // Importujemy nowe moduły autoryzacji
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // Twoje prywatne klucze do bazy danych
         const firebaseConfig = {
             apiKey: "AIzaSyBrP8tcT7WmfrcWGWNrm5H_1mwEpMULypQ",
             authDomain: "ekipachat.firebaseapp.com",
@@ -187,87 +220,106 @@
             storageBucket: "ekipachat.firebasestorage.app",
             messagingSenderId: "918904566954",
             appId: "1:918904566954:web:2f1ed674c144a7bc4e0cd3",
-            // Dodałem precyzyjny link do Twojej europejskiej bazy danych:
-            databaseURL: "https://ekipachat-default-rtdb.europe-west1.firebasedatabase.app" 
+            databaseURL: "https://ekipachat-default-rtdb.europe-west1.firebasedatabase.app"
         };
 
-        // Odpalamy maszynę
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const messagesRef = ref(db, "messages"); // folder "messages" w bazie
+        const auth = getAuth(app);
+        const messagesRef = ref(db, "messages");
 
-        let currentUser = "";
+        let currentUserEmail = "";
+        let currentUserName = "";
 
-        // Funkcja logowania
-        window.login = function() {
-            const usernameInput = document.getElementById('username-input').value.trim();
-            if (usernameInput.length < 2) {
-                alert("Nick musi mieć minimum 2 znaki, mordo!");
-                return;
-            }
-            
-            currentUser = usernameInput;
-            
-            // Przełączanie ekranu
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'flex';
-            
-            // Odpalenie nasłuchiwania wiadomości po wejściu na czat
-            listenForMessages();
+        // Przełączanie między logowaniem a rejestracją
+        window.toggleForms = function() {
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('register-form').classList.toggle('hidden');
         }
 
-        // Wysyłanie Enterem
-        document.getElementById("message-input").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                window.sendMessage();
+        // --- SYSTEM AUTORYZACJI ---
+
+        // Rejestracja
+        window.registerUser = function() {
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
+            createUserWithEmailAndPassword(auth, email, password)
+                .then(() => alert("Konto założone! Jesteś zalogowany."))
+                .catch((error) => alert("Błąd rejestracji: " + error.message));
+        }
+
+        // Logowanie
+        window.loginUser = function() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => alert("Błąd logowania. Sprawdź e-mail i hasło."));
+        }
+
+        // Wylogowanie
+        window.logoutUser = function() {
+            signOut(auth).then(() => {
+                document.getElementById('messages-container').innerHTML = ''; // czyszczenie czatu
+            });
+        }
+
+        // Nasłuchiwacz: Sprawdza, czy ktoś jest zalogowany
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Użytkownik jest zalogowany
+                currentUserEmail = user.email;
+                currentUserName = currentUserEmail.split('@')[0]; // Wyciąga nick przed znakiem @
+                
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('chat-screen').style.display = 'flex';
+                document.getElementById('current-user-display').innerText = "Zalogowano jako: " + currentUserName;
+                
+                listenForMessages(); // Odpala czat
+            } else {
+                // Użytkownik jest wylogowany
+                document.getElementById('auth-screen').style.display = 'block';
+                document.getElementById('chat-screen').style.display = 'none';
             }
         });
 
-        // Wysyłanie wiadomości na serwer
+        // --- SYSTEM CZATU ---
+
         window.sendMessage = function() {
-            const messageInput = document.getElementById('message-input');
-            const messageText = messageInput.value.trim();
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (text === "") return;
 
-            if (messageText === "") return;
-
-            // PUSH to komenda Firebase, która wrzuca nową wiadomość do bazy
             push(messagesRef, {
-                name: currentUser,
-                text: messageText,
+                name: currentUserName,
+                email: currentUserEmail,
+                text: text,
                 timestamp: Date.now()
             });
-
-            // Czyszczenie pola
-            messageInput.value = '';
+            input.value = '';
         }
 
-        // Pobieranie wiadomości z serwera w czasie rzeczywistym
+        document.getElementById("message-input").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") window.sendMessage();
+        });
+
+        let isListening = false;
         function listenForMessages() {
-            const container = document.getElementById('messages-container');
-            container.innerHTML = ''; // Czyścimy na start
+            if(isListening) return; // Zabezpieczenie przed podwójnym wczytywaniem
+            isListening = true;
             
-            // onChildAdded odpala się automatycznie ZAWSZE, gdy ktoś (nawet na innym telefonie) wyśle wiadomość
+            const container = document.getElementById('messages-container');
+            
             onChildAdded(messagesRef, (snapshot) => {
                 const data = snapshot.val();
+                const div = document.createElement('div');
                 
-                const messageDiv = document.createElement('div');
+                // Identyfikacja po e-mailu, a nie samym nicku (bezpieczniejsze)
+                div.className = data.email === currentUserEmail ? 'message me' : 'message other';
+                div.innerHTML = `<span class="username">${data.name}</span>${data.text}`;
                 
-                // Sprawdzamy, czy to nasza wiadomość (kolor niebieski), czy kogoś innego (kolor szary)
-                if (data.name === currentUser) {
-                    messageDiv.className = 'message me';
-                } else {
-                    messageDiv.className = 'message other';
-                }
-
-                messageDiv.innerHTML = `
-                    <span class="username">${data.name}</span>
-                    ${data.text}
-                `;
-
-                container.appendChild(messageDiv);
-                
-                // Automatycznie zjeżdża ekranem na sam dół do nowej wiadomości
+                container.appendChild(div);
                 container.scrollTop = container.scrollHeight;
             });
         }
