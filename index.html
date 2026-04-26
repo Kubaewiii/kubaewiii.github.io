@@ -70,15 +70,20 @@
 
         /* --- EKRAN CZATU --- */
         #chat-screen {
-            display: none; /* Ukryty na start */
+            display: none;
             flex-direction: column;
             width: 100%;
             max-width: 600px;
-            height: 90vh;
+            height: 100vh; /* Na telefonach lepiej wygląda pełny ekran */
             background: var(--panel-bg);
-            border-radius: 20px;
-            overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        @media (min-width: 600px) {
+            #chat-screen {
+                height: 90vh;
+                border-radius: 20px;
+            }
         }
 
         .chat-header {
@@ -105,6 +110,12 @@
             border-radius: 15px;
             font-size: 0.95rem;
             line-height: 1.4;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message.other {
@@ -144,82 +155,122 @@
 <body>
 
     <div id="login-screen">
-        <h1>Wbijaj na Czat</h1>
+        <h1>Czat Ekipy 🚀</h1>
         <input type="text" id="username-input" placeholder="Wpisz swój nick..." autocomplete="off">
-        <button onclick="login()">Wejdź</button>
+        <button onclick="window.login()">Wejdź na serwer</button>
     </div>
 
     <div id="chat-screen">
-        <div class="chat-header" id="chat-title">
-            Wspólny Czat
+        <div class="chat-header">
+            Wspólny Czat (Na Żywo)
         </div>
         
         <div class="chat-messages" id="messages-container">
-            <div class="message other">
-                <span class="username">System</span>
-                Witaj na czacie! Pamiętaj o kulturze.
             </div>
-        </div>
 
         <div class="chat-input-area">
             <input type="text" id="message-input" placeholder="Napisz wiadomość..." autocomplete="off">
-            <button onclick="sendMessage()">Wyślij</button>
+            <button onclick="window.sendMessage()">Wyślij</button>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Importujemy kod Firebase bezpośrednio z serwerów Google
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // Twoje prywatne klucze do bazy danych
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrP8tcT7WmfrcWGWNrm5H_1mwEpMULypQ",
+            authDomain: "ekipachat.firebaseapp.com",
+            projectId: "ekipachat",
+            storageBucket: "ekipachat.firebasestorage.app",
+            messagingSenderId: "918904566954",
+            appId: "1:918904566954:web:2f1ed674c144a7bc4e0cd3",
+            // Dodałem precyzyjny link do Twojej europejskiej bazy danych:
+            databaseURL: "https://ekipachat-default-rtdb.europe-west1.firebasedatabase.app" 
+        };
+
+        // Odpalamy maszynę
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const messagesRef = ref(db, "messages"); // folder "messages" w bazie
+
         let currentUser = "";
 
-        // Funkcja logowania (przełącza ekrany)
-        function login() {
+        // Funkcja logowania
+        window.login = function() {
             const usernameInput = document.getElementById('username-input').value.trim();
             if (usernameInput.length < 2) {
-                alert("Nick musi mieć minimum 2 znaki!");
+                alert("Nick musi mieć minimum 2 znaki, mordo!");
                 return;
             }
             
             currentUser = usernameInput;
             
-            // Ukryj logowanie, pokaż czat
+            // Przełączanie ekranu
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('chat-screen').style.display = 'flex';
             
-            // Dodaj nasłuchiwanie na klawisz "Enter" w polu wiadomości
-            document.getElementById("message-input").addEventListener("keypress", function(event) {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    sendMessage();
-                }
-            });
+            // Odpalenie nasłuchiwania wiadomości po wejściu na czat
+            listenForMessages();
         }
 
-        // Funkcja wysyłania wiadomości (na razie tylko wizualna)
-        function sendMessage() {
+        // Wysyłanie Enterem
+        document.getElementById("message-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                window.sendMessage();
+            }
+        });
+
+        // Wysyłanie wiadomości na serwer
+        window.sendMessage = function() {
             const messageInput = document.getElementById('message-input');
             const messageText = messageInput.value.trim();
 
             if (messageText === "") return;
 
-            const container = document.getElementById('messages-container');
+            // PUSH to komenda Firebase, która wrzuca nową wiadomość do bazy
+            push(messagesRef, {
+                name: currentUser,
+                text: messageText,
+                timestamp: Date.now()
+            });
 
-            // Tworzenie HTML dla nowego dymka z wiadomością
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message me'; // Klasa 'me' stylizuje dymek po prawej stronie
-            messageDiv.innerHTML = `
-                <span class="username">${currentUser}</span>
-                ${messageText}
-            `;
-
-            // Dodanie dymka do czatu
-            container.appendChild(messageDiv);
-
-            // Wyszczyszczenie pola tekstowego
+            // Czyszczenie pola
             messageInput.value = '';
+        }
 
-            // Automatyczne przewijanie czatu na sam dół
-            container.scrollTop = container.scrollHeight;
+        // Pobieranie wiadomości z serwera w czasie rzeczywistym
+        function listenForMessages() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = ''; // Czyścimy na start
+            
+            // onChildAdded odpala się automatycznie ZAWSZE, gdy ktoś (nawet na innym telefonie) wyśle wiadomość
+            onChildAdded(messagesRef, (snapshot) => {
+                const data = snapshot.val();
+                
+                const messageDiv = document.createElement('div');
+                
+                // Sprawdzamy, czy to nasza wiadomość (kolor niebieski), czy kogoś innego (kolor szary)
+                if (data.name === currentUser) {
+                    messageDiv.className = 'message me';
+                } else {
+                    messageDiv.className = 'message other';
+                }
+
+                messageDiv.innerHTML = `
+                    <span class="username">${data.name}</span>
+                    ${data.text}
+                `;
+
+                container.appendChild(messageDiv);
+                
+                // Automatycznie zjeżdża ekranem na sam dół do nowej wiadomości
+                container.scrollTop = container.scrollHeight;
+            });
         }
     </script>
-
 </body>
 </html>
